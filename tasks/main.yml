@@ -1,0 +1,82 @@
+---
+
+- fail: msg="logstash input is not configured"
+  when: not logstash_input
+
+- fail: msg="logstash output is not configured"
+  when: not logstash_output
+
+- name: check logstash is installed
+  command: dpkg-query -l logstash
+  register: logstash_installed_check
+  failed_when: logstash_installed_check.rc > 1 # do not trigger command failure when exiting with code 1
+  changed_when: logstash_installed_check.rc == 1 # triggers changed only when package is not found
+
+- name: download logstash
+  get_url:
+    url=https://download.elastic.co/logstash/logstash/packages/debian/logstash_{{ logstash_version }}-1_all.deb
+    dest=/tmp/logstash_{{ logstash_version }}-1_all.deb
+    mode=0440
+  when: logstash_installed_check == 1
+
+- name: install logstash debian package
+  apt:
+    deb=/tmp/logstash_{{ logstash_version }}-1_all.deb
+  when: logstash_installed_check == 1
+
+- name: install logstash plugins
+  command: ./plugin install {{ item }}
+    chdir=/opt/logstash/bin
+
+  with_items: "{{ logstash_install_plugins }}"
+  when: item is defined
+
+- name: download geolite database
+  get_url:
+    url=http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
+    dest=/tmp/GeoLiteCity.dat.gz
+    mode=0440
+  when: logstash_install_geolite
+
+- name: uncompress geolite database
+  command: gunzip -k GeoLiteCity.dat.gz
+    chdir=/tmp/
+    creates=/tmp/GeoLiteCity.dat
+
+  when: logstash_install_geolite
+
+- name: change the geolite database file permissions
+  file:
+    path=/tmp/GeoLiteCity.dat
+    mode=0644
+    state=touch
+
+  when: logstash_install_geolite
+
+- name: move the uncompressed geolite database to the right path
+  command: mv GeoLiteCity.dat /etc/logstash/GeoLiteCity.dat
+    chdir=/tmp/
+    #creates=/etc/logstash/GeoLiteCity.dat
+
+  when: logstash_install_geolite
+
+- name: configure logstash defaults
+  template:
+    src=defaults.conf.j2
+    dest=/etc/default/logstash
+  notify:
+  - restart logstash
+
+- name: configure logstash
+  template:
+    src=logstash.conf.j2
+    dest=/etc/logstash/conf.d/logstash.conf
+  notify:
+  - restart logstash
+
+- name: configure logstash's elasticsearch client confs to the working directory of logstash
+  template:
+    src=elasticsearch.yml.j2
+    dest=/var/lib/logstash/elasticsearch.yml
+  notify:
+  - restart logstash

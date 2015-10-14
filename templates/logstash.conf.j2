@@ -1,0 +1,17 @@
+input {
+    {{ logstash_input }}
+}
+
+{% if logstash_contrib_filters or logstash_filter %}
+filter {
+    {% if logstash_filter %}{{ logstash_filter }}{% endif %}
+
+    {% for filter in logstash_contrib_filters %}
+        {% include "contrib_filters/" +  filter  + ".conf" %}
+    {% endfor %}
+}
+{% endif %}
+
+output {
+    {{ logstash_output }}
+}
