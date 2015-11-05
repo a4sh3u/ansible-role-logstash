@@ -1,0 +1,11 @@
+---
+
+- hosts: all
+  sudo: yes
+  roles:
+  - {
+        role: "../../",
+
+        logstash_input: 'tcp { port => 1234 type => "tcp_test" }',
+        logstash_output: 'stdout { codec => rubydebug }'
+    }

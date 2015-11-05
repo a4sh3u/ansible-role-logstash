@@ -9,7 +9,7 @@
 #LS_HOME=/var/lib/logstash
 
 # Arguments to pass to logstash agent
-#LS_OPTS=""
+LS_OPTS="{{ logstash_opts }}"
 
 # Arguments to pass to java
 LS_HEAP_SIZE="{{ logstash_java_heap_size }}"

@@ -1,14 +1,12 @@
 ---
 
-logstash_version: 1.5.4
-logstash_user: logstash
-logstash_group: logstash
-
-logstash_input: 
-logstash_filter: 
-logstash_output: 
-logstash_contrib_filters: []
+logstash_version: 2.0.0
+logstash_opts: ""
+logstash_input: "" # required
+logstash_filter: ""
+logstash_output: "" # required
 logstash_install_geolite: no
-logstash_install_plugins: []
+logstash_plugins: []
+logstash_contrib_filters: []
 
 logstash_java_heap_size: 500m

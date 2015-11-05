@@ -17,18 +17,18 @@
     url=https://download.elastic.co/logstash/logstash/packages/debian/logstash_{{ logstash_version }}-1_all.deb
     dest=/tmp/logstash_{{ logstash_version }}-1_all.deb
     mode=0440
-  when: logstash_installed_check == 1
+  when: logstash_installed_check.changed
 
 - name: install logstash debian package
   apt:
     deb=/tmp/logstash_{{ logstash_version }}-1_all.deb
-  when: logstash_installed_check == 1
+  when: logstash_installed_check.changed
 
 - name: install logstash plugins
   command: ./plugin install {{ item }}
     chdir=/opt/logstash/bin
 
-  with_items: "{{ logstash_install_plugins }}"
+  with_items: "{{ logstash_plugins }}"
   when: item is defined
 
 - name: download geolite database
@@ -74,9 +74,9 @@
   notify:
   - restart logstash
 
-- name: configure logstash's elasticsearch client confs to the working directory of logstash
-  template:
-    src=elasticsearch.yml.j2
-    dest=/var/lib/logstash/elasticsearch.yml
-  notify:
-  - restart logstash
+# - name: configure logstash's elasticsearch client confs to the working directory of logstash
+#   template:
+#     src=elasticsearch.yml.j2
+#     dest=/var/lib/logstash/elasticsearch.yml
+#   notify:
+#   - restart logstash
