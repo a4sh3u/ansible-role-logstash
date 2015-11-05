@@ -1,6 +1,8 @@
 Ansible Role: Logstash
 ======================
 
+[![Build Status](https://travis-ci.org/redouane/ansible-role-logstash.svg?branch=master)](https://travis-ci.org/redouane/ansible-role-logstash)
+
 Installs and configures Logstash
 
 Requirements
